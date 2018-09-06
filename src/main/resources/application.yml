@@ -1,0 +1,92 @@
+logging:
+  level:
+    tk.mybatis: DEBUG
+    com.cnpc.admin: DEBUG
+spring:
+  application:
+    name: esp-es
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: non_null
+  datasource:
+    name: test
+    #Configure the remote: url
+    #url: jdbc:mysql://localhost:3306/riped-admin?useUnicode=true&characterEncoding=UTF8
+    url: jdbc:mysql://10.27.213.67:3306/riped-admin?useUnicode=true&characterEncoding=UTF8
+    username: root
+    password: MYSQLPTRkygl@67
+    # 使用druid数据源
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    filters: stat
+    maxActive: 20
+    initialSize: 1
+    maxWait: 60000
+    minIdle: 1
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: select 'x'
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxOpenPreparedStatements: 20
+  redis:
+    database: 0
+    #Configure the remote: host
+    host: localhost
+    password: redis-bill
+  cache:
+    cache-names: espAdmin
+  freemarker:
+    template-loader-path: classpath:/templates/
+  data:
+    elasticsearch:
+      cluster-nodes: 127.0.0.1:9300
+mybatis:
+  basepackage: com.cnpc.es.mapper
+  xmlLocation: classpath:mapper/**/*.xml
+  # id 主键生成
+  mappers: tk.mybatis.mapper.common.Mapper
+  identity: SELECT REPLACE(UUID(),'-','')
+  order: BEFORE
+  typeAliasesPackage: com.cnpc.es.entity
+server:
+  port: 8100
+
+
+eureka:
+  instance:
+    statusPageUrlPath: /info
+    healthCheckUrlPath: /health
+    # docker 部署开启
+    prefer-ip-address: ${PREFER_IP_ADDRESS_BL:false}
+    ip-address: ${CFG_ADMIN_HOST:localhost}
+    instance-id: ${spring.application.name}:${CFG_ADMIN_HOST:localhost}:${server.port}
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    #Configure the remote: serviceUrl.defaultZone
+    #serviceUrl:
+      #defaultZone: http://localhost:8761/eureka/
+swagger:
+  basepackage: com.cnpc.es
+  service:
+    name: es and oauth for AdminESP
+    description: 办公管理中心
+    developer: billjiang
+
+admin:
+  rabbitmq:
+    #host: localhost
+    port: 5672
+    username: guest
+    password: guest
+security:
+  basic:
+    enabled: false
+webservice:
+  login:
+    url: http://10.27.213.243:8081/PetrochinaService/PetroChinaAuthService.asmx
+    openAD: ${CFG_GATEWAY_OPENAD:false}

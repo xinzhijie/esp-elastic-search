@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cnpc.admin.mapper.AttentionMapper">
+
+    <resultMap id="baseResultMap" type="com.cnpc.es.entity.Attention">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="follow_user_id" property="followUserId"/>
+        <result column="order_num" property="orderNum"/>
+    </resultMap>
+
+    <select id="getFollowPerson" parameterType="java.util.Map" resultType="java.util.Map">
+        select u.id as id,u.name as name,u.sex as sex,o.name as officeName from base_user u LEFT JOIN base_org o on u.office_id = o.id where u.id = #{followId}
+    </select>
+
+    <select id="getCurrentDayAttention" parameterType="java.lang.String" resultType="java.util.Map">
+        select u.name, w.time,w.endtime,w.content from tbl_followperson f LEFT JOIN tbl_work w on f.follow_user_id = w.user_id LEFT JOIN base_user u on f.follow_user_id = u.id where f.user_id = #{currentUserId} AND w.day = CURRENT_DATE AND w.is_share = 1
+    </select>
+
+    <select id="getCurrentDayAttentionGroup" parameterType="java.lang.String" resultType="java.util.Map">
+        select u.name as name, count(*) as count from tbl_followperson f LEFT JOIN tbl_work w on f.follow_user_id = w.user_id LEFT JOIN base_user u on f.follow_user_id = u.id where f.user_id = #{currentUserId} AND w.day = CURRENT_DATE GROUP BY u.name
+    </select>
+
+    <select id="getFollowPersonsByUserId" parameterType="java.util.Map" resultType="java.util.Map">
+        select w.id as id
+              ,w.follow_user_id as followPersonId
+              ,u.name as name
+              ,o.name as officeName
+              ,m.pos as position
+              ,w.order_num as order_num
+        from tbl_followperson w
+             left join base_user u
+                on w.follow_user_Id = u.id
+             left join base_org o
+                on u.office_id = o.id
+             left join base_user_matter m
+                on w.follow_user_Id = m.user_id
+             left JOIN (select DISTINCT name,pinyin FROM user_pinyin) pinyin on pinyin.name = u.name
+        where w.user_id = #{currentUserId}
+        <if test="name != null and name != ''">
+            AND (u.NAME like CONCAT(CONCAT('%', #{name}),'%') OR pinyin.pinyin  like CONCAT(CONCAT('%', #{name}),'%'))
+        </if>
+        order by w.order_num desc
+    </select>
+
+    <select id="getEntityByUserId" parameterType="java.lang.String" resultMap="baseResultMap">
+        select id,user_id,follow_user_id from tbl_followperson where user_id = #{userId}
+    </select>
+
+</mapper>
